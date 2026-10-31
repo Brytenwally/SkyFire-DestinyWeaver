@@ -141,6 +141,7 @@ namespace DestinyWeaver
         g_config.experienceBonusControl = sConfigMgr->GetBoolDefault("DestinyWeaver.ExperienceBonusControl", true);
 
         ApplyScalingConfig();
+        ApplyItemConfig();
 
         SF_LOG_INFO("modules", "[mod-destiny-weaver] %s: module %s, open world scaling %s (offset %u, dungeons %s, "
             "default %s), experience bonus control %s.", reload ? "Reloaded" : "Loaded",
@@ -336,6 +337,8 @@ public:
                 handler->SendSysMessage("You are grouped: the group leader's switch decides; creatures still scale to your own level.");
             handler->PSendSysMessage("Creatures are lifted to your level - %u.", uint32(config.offset));
         }
+        if (DestinyWeaver::ItemScalingActive())
+            handler->SendSysMessage("Item scaling: gear you loot (and scaled quest rewards) below your level is raised to it.");
         if (config.experienceBonusControl)
             handler->PSendSysMessage("Experience bonuses: %s.",
                 DestinyWeaver::ExperienceBonusControlEnabled(player) ? "|cffff2020off|r" : "|cff00ff00on|r");
@@ -506,6 +509,7 @@ public:
             "`level_scaling` TINYINT NOT NULL DEFAULT -1 COMMENT '-1 never chose, 0 off, 1 on', "
             "`xp_bonus_off` TINYINT UNSIGNED NOT NULL DEFAULT 0, "
             "PRIMARY KEY (`guid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='mod-destiny-weaver choices'");
+        DestinyWeaver::LoadItemShifts();
         DestinyWeaver::LoadConfig(false);
     }
 

@@ -7,9 +7,11 @@
 // modules/mod-destiny-weaver.
 void AddSC_destiny_weaver();
 void AddSC_destiny_weaver_scaling();
+void AddSC_destiny_weaver_items();
 
 void Addmod_destiny_weaverScripts()
 {
     AddSC_destiny_weaver();
     AddSC_destiny_weaver_scaling();
+    AddSC_destiny_weaver_items();
 }

@@ -47,6 +47,12 @@ namespace DestinyWeaver
     // Called from the character's update: re-sends what was requested.
     void ServeRefresh(Player* player);
     void ForgetRefresh(uint64 guid);
+
+    // DestinyWeaverItems.cpp: item scaling (loot and scaled quest rewards raised to the
+    // character's level through the item upgrade modifier).
+    void ApplyItemConfig();
+    void LoadItemShifts();
+    bool ItemScalingActive();
 }
 
 #endif

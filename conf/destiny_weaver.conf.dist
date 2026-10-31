@@ -67,6 +67,25 @@ DestinyWeaver.Scaling.QuestMoneyKeepShare = 60
 #        Default:     100
 DestinyWeaver.Scaling.QuestXpKeepShare = 100
 
+#    DestinyWeaver.ItemScaling
+#        Description: Raise the gear a character with open world scaling loots below
+#                     their level to the item level an item of its kind has at that
+#                     level (the level their creatures are at: their level minus the
+#                     offset). The item keeps its name and its own stats, scaled the way
+#                     the client scales upgraded items (the tooltip shows the new item
+#                     level and stats), and stays at that level afterwards. Upgrades
+#                     only, never downgrades; weapons and armor of uncommon quality and
+#                     up; not in raids, heroics, scenarios, battlegrounds or arenas.
+#                     Raised items keep their level as long as the module is enabled.
+#        Default:     1
+DestinyWeaver.ItemScaling = 1
+
+#    DestinyWeaver.ItemScaling.QuestRewards
+#        Description: Raise the item rewards of a quest scaled to the character's level
+#                     the same way (to their level).
+#        Default:     1
+DestinyWeaver.ItemScaling.QuestRewards = 1
+
 #    DestinyWeaver.ExperienceBonusControl
 #        Description: Allow `.weaver xpbonus off`: the character stops receiving bonus
 #                     experience from auras (heirlooms, the guild perk, potions and other

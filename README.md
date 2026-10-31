@@ -21,6 +21,11 @@ AzerothCore CoA `mod-destiny-weaver`.
   level (money with a discount for quests far below it, `QuestMoneyKeepShare`), quest givers
   stop showing them as trivial, and the quest log shows the scaled level (the quest data the
   client caches is re-sent on login and whenever the character's scaling changes, as CoA does).
+- **Item scaling.** Gear a character with scaling on loots below their level (and the item
+  rewards of a scaled quest) is raised to the item level an item of its kind has at their
+  level, and stays there, like an heirloom frozen at the level it was looted at. It keeps its
+  name and its own stats, scaled; the tooltip shows the new item level and stats (the 5.4
+  item upgrade, with this module's upgrade rows sent to clients as hotfixes). Upgrades only.
 - **Experience bonus control.** `.weaver xpbonus off` removes aura experience bonuses
   (heirlooms, guild perk, potions) for a character who wants the base rate.
 
@@ -39,7 +44,9 @@ AzerothCore CoA `mod-destiny-weaver`.
    (the SkyFire-build workflow does it when "Compile the Destiny Weaver module in" is on).
 3. Copy `destiny_weaver.conf.dist` to `destiny_weaver.conf` next to `worldserver.conf` and set
    `DestinyWeaver.Enable = 1`. **The module is off by default.**
-4. The `character_destiny_weaver` table is created in the characters database at startup.
+4. The `character_destiny_weaver` and `character_destiny_weaver_items` tables are created in
+   the characters database at startup. The server needs `gtItemSocketCostPerLevel.dbc` in its
+   dbc folder (loaded by the core).
 
 ## Not ported
 

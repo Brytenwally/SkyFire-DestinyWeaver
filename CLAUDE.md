@@ -40,6 +40,21 @@ Project-wide notes are in SkyFire-playerbots' `CLAUDE.md`.
   cache doubles as "who is online" for the leader rule), table `character_destiny_weaver`
   created at startup, `.weaver` commands, group hooks, XP bonus stripping in `OnGiveXP`
   (aura multipliers divided out; victim null = quest).
+- `DestinyWeaverItems.cpp`: item scaling. Owner's rules: upgrades only (never downgrade), no
+  random suffixes or extra stats, items keep their own stats scaled; logic in the module, only
+  hooks in the core (`ItemScalingHooks.h`, `Item::SetUpgradeId`, `PlayerScript::OnLootItem` /
+  `OnQuestRewardItem`). An item's raise is the 5.4 upgrade modifier with this module's
+  ItemUpgrade.db2 rows (ids 901001..901600 = +1..+600 item levels, path 124, hotfixes with a
+  fixed timestamp: bump `HOTFIX_TIMESTAMP` if rows change). Client display needs mask 7
+  (core). Stats: the client's formula (RandPropPoints x stat_unk1 / 10000 minus int(socket
+  multiplier x gtItemSocketCostPerLevel)), multiplier recovered to a quarter since the DB
+  rounds it; checked on 14 tooltip values. Target item level: median item level of items of
+  the same class/subclass/slot/quality requiring that level (widening to subclass, class,
+  +-10 levels), the owner's Level-60-World reference index. Loot target = level - offset,
+  only where creatures scale (`ScaledContent`); quest rewards = player level when the quest
+  is scaled. Shifts persist in `character_destiny_weaver_items` (cleaned of deleted items at
+  startup), restored by the ItemLoaded hook. Items loaded before OnStartup (auction house,
+  guild bank) get their raise back on their next load. Bots are skipped.
 - Playerbots: bot sessions (`WorldSession::IsBot`) have no stored choice; grouped bots follow
   the leader, ungrouped ones use `DestinyWeaver.Scaling.UngroupedBots` (default off).
 
