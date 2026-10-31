@@ -52,7 +52,9 @@ Project-wide notes are in SkyFire-playerbots' `CLAUDE.md`.
   the same class/subclass/slot/quality requiring that level (widening to subclass, class,
   +-10 levels), the owner's Level-60-World reference index. Loot target = level - offset,
   only where creatures scale (`ScaledContent`); quest rewards = player level when the quest
-  is scaled. Shifts persist in `character_destiny_weaver_items` (cleaned of deleted items at
+  is scaled. Owner's item level caps per target level (`DestinyWeaver.ItemScaling.ItemLevelCaps`,
+  default 60:59, 70:90, 80:180, 85:315, 90:440) clip the target so low-level farming cannot
+  make raid-grade gear. Shifts persist in `character_destiny_weaver_items` (cleaned of deleted items at
   startup), restored by the ItemLoaded hook. Items loaded before OnStartup (auction house,
   guild bank) get their raise back on their next load. Bots are skipped.
 - Playerbots: bot sessions (`WorldSession::IsBot`) have no stored choice; grouped bots follow

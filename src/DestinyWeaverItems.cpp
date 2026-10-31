@@ -43,6 +43,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstdlib>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -69,6 +70,42 @@ namespace
 
     bool g_itemScaling = false;          // DestinyWeaver.ItemScaling (and the module enabled)
     bool g_questRewards = true;          // DestinyWeaver.ItemScaling.QuestRewards
+
+    // DestinyWeaver.ItemScaling.ItemLevelCaps: highest item level a raise may reach, by the
+    // level it targets ("level:item level" pairs; a target level uses the first pair whose
+    // level is at or above it). Keeps farming low creatures from producing raid-grade gear.
+    std::vector<std::pair<uint32, uint32>> g_itemLevelCaps;
+
+    std::vector<std::pair<uint32, uint32>> ParseItemLevelCaps(std::string const& text)
+    {
+        std::vector<std::pair<uint32, uint32>> caps;
+        size_t start = 0;
+        while (start < text.size())
+        {
+            size_t const end = std::min(text.find(',', start), text.size());
+            std::string const pair = text.substr(start, end - start);
+            size_t const colon = pair.find(':');
+            if (colon != std::string::npos)
+            {
+                uint32 const level = uint32(std::strtoul(pair.substr(0, colon).c_str(), nullptr, 10));
+                uint32 const itemLevel = uint32(std::strtoul(pair.substr(colon + 1).c_str(), nullptr, 10));
+                if (level && itemLevel)
+                    caps.emplace_back(level, itemLevel);
+            }
+            start = end + 1;
+        }
+        std::sort(caps.begin(), caps.end());
+        return caps;
+    }
+
+    // 0 = no cap for that level.
+    uint32 ItemLevelCap(uint32 targetLevel)
+    {
+        for (auto const& cap : g_itemLevelCaps)
+            if (targetLevel <= cap.first)
+                return cap.second;
+        return 0;
+    }
 
     bool IsModuleUpgradeId(uint32 id)
     {
@@ -381,7 +418,9 @@ namespace
         if (Budget(proto, proto->ItemLevel) <= 0.0f)
             return;                                     // poor/common or no budget: client would not scale it
 
-        uint32 const target = TargetItemLevel(proto, targetLevel);
+        uint32 target = TargetItemLevel(proto, targetLevel);
+        if (uint32 const cap = ItemLevelCap(targetLevel))
+            target = std::min(target, cap);
         int32 const shift = std::min<int32>(int32(target) - int32(proto->ItemLevel), MAX_SHIFT);
         if (shift <= 0)
             return;                                     // upgrades only
@@ -419,6 +458,8 @@ namespace DestinyWeaver
         Config const& config = GetConfig();
         g_itemScaling = config.enabled && config.levelScaling && sConfigMgr->GetBoolDefault("DestinyWeaver.ItemScaling", true);
         g_questRewards = sConfigMgr->GetBoolDefault("DestinyWeaver.ItemScaling.QuestRewards", true);
+        g_itemLevelCaps = ParseItemLevelCaps(sConfigMgr->GetStringDefault("DestinyWeaver.ItemScaling.ItemLevelCaps",
+            "60:59,70:90,80:180,85:315,90:440"));
 
         // Raised items keep their stats as long as the module is enabled, even if a
         // character turns scaling off later.

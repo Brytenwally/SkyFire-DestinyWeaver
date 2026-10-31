@@ -80,6 +80,16 @@ DestinyWeaver.Scaling.QuestXpKeepShare = 100
 #        Default:     1
 DestinyWeaver.ItemScaling = 1
 
+#    DestinyWeaver.ItemScaling.ItemLevelCaps
+#        Description: Highest item level a raise may reach, by the level it targets, so
+#                     farming low-level creatures cannot produce raid-grade gear. Pairs of
+#                     "level:item level"; a target level uses the first pair whose level is
+#                     at or above it (levels 1-60 -> 59, 61-70 -> 90, 71-80 -> 180,
+#                     81-85 -> 315, 86-90 -> 440). Levels above the last pair are not capped.
+#                     Items already above the cap are left as they are.
+#        Default:     "60:59,70:90,80:180,85:315,90:440"
+DestinyWeaver.ItemScaling.ItemLevelCaps = "60:59,70:90,80:180,85:315,90:440"
+
 #    DestinyWeaver.ItemScaling.QuestRewards
 #        Description: Raise the item rewards of a quest scaled to the character's level
 #                     the same way (to their level).
