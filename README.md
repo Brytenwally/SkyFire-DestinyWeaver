@@ -18,8 +18,9 @@ AzerothCore CoA `mod-destiny-weaver`.
   - In a group the leader's switch decides whether the group scales; each member still gets
     their own level.
 - **Quest scaling.** Quests play at the character's level: experience and money are paid at that
-  level (money with a discount for quests far below it, `QuestMoneyKeepShare`), and quest givers
-  stop showing them as trivial.
+  level (money with a discount for quests far below it, `QuestMoneyKeepShare`), quest givers
+  stop showing them as trivial, and the quest log shows the scaled level (the quest data the
+  client caches is re-sent on login and whenever the character's scaling changes, as CoA does).
 - **Experience bonus control.** `.weaver xpbonus off` removes aura experience bonuses
   (heirlooms, guild perk, potions) for a character who wants the base rate.
 
@@ -46,8 +47,6 @@ AzerothCore CoA `mod-destiny-weaver`.
 - Ascension client features: the scaling opcode from the character creation screen and the
   creature display streaming.
 - Recruit-a-friend in experience bonus control (SkyFire adds it after the script hook).
-- The quest log keeps showing a quest's authored level (the 5.4.8 client caches quest data);
-  quest givers, experience and money use the scaled level.
 
 ## License
 

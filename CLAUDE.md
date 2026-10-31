@@ -26,7 +26,10 @@ Project-wide notes are in SkyFire-playerbots' `CLAUDE.md`.
   in `UnitCombat.cpp`, kill XP (`Formulas.h`, KillRewarder grey check and expansion penalty
   skipped for scaled kills), `Player::isHonorOrXPTarget`, quests (`Quest::XPValue`,
   `Quest::GetRewMoney(Player const*)`, `Quest::GetQuestLevelFor`, `Player::GetQuestLevel`,
-  gossip quest lists).
+  gossip quest lists, and the quest query response). `Player::RefreshQuestLogQueries`
+  re-sends the query response of every quest in the log (CoA's fix for the client's cached
+  quest levels); `ServeRefresh` calls it, and every login queues a refresh because the
+  client cache may hold another character's levels.
 - `DestinyWeaverScaling.cpp`: `ViewFor` builds one character's version of a creature from
   `creature_classlevelstats` (ratios, so template modifiers cancel); damage hooks
   (`OnDamage` onto the real pool, `ModifyMeleeDamage` / `ModifySpellDamageTaken` /

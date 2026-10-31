@@ -260,6 +260,10 @@ namespace DestinyWeaver
             return;
         ResendNearbyCreatures(player);
         player->UpdateForQuestWorldObjects();
+        // The client caches each quest's level from its query response: re-send them so the
+        // quest log shows the level the quests now play at for this character.
+        if (player->GetSession() && !player->GetSession()->IsBot())
+            player->RefreshQuestLogQueries();
     }
 }
 
@@ -406,6 +410,10 @@ public:
             std::unique_lock<std::shared_mutex> guard(g_choiceLock);
             g_choices[player->GetGUIDLow()] = choice;
         }
+
+        // The client may still hold quest levels cached on another character: send this one's.
+        if (DestinyWeaver::GetConfig().enabled && DestinyWeaver::GetConfig().levelScaling && !choice.bot)
+            DestinyWeaver::RefreshClient(player);
 
         // A leader coming online brings their switch to the group.
         if (Group* group = player->GetGroup())
