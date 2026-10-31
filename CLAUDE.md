@@ -59,7 +59,9 @@ Project-wide notes are in SkyFire-playerbots' `CLAUDE.md`.
   startup), restored by the ItemLoaded hook. Items loaded before OnStartup (auction house,
   guild bank) get their raise back on their next load. Bots too (owner's choice): they follow
   the same switch as for creatures (group leader's, else `Scaling.UngroupedBots`);
-  SkyFire-playerbots values raised items through `Item::GetStatTemplate`.
+  SkyFire-playerbots values raised items through `Item::GetStatTemplate`, and bots roll on
+  the raised version of a drop (`ItemScalingHooks::LootPreview`, same rules as `OnLootItem`
+  via `RaiseFor`).
 - Playerbots: bot sessions (`WorldSession::IsBot`) have no stored choice; grouped bots follow
   the leader, ungrouped ones use `DestinyWeaver.Scaling.UngroupedBots` (default off).
 

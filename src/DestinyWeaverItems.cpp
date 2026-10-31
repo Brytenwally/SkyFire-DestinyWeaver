@@ -408,22 +408,32 @@ namespace
         return !map->IsDungeon() || (DestinyWeaver::GetConfig().dungeons && map->IsRegularDifficulty());
     }
 
-    void Stamp(Player* player, Item* item, uint32 targetLevel, char const* source)
+    // Item levels an item of this kind gains when raised for a character of targetLevel
+    // (capped by the player-level bracket); 0 = it stays as it is (upgrades only).
+    int32 RaiseFor(ItemTemplate const* proto, uint32 targetLevel)
     {
-        ItemTemplate const* proto = item ? item->GetTemplate() : nullptr;
-        if (!proto || item->GetUpgradeId() || proto->ScalingStatDistribution)
-            return;
+        if (!proto || proto->ScalingStatDistribution)
+            return 0;
         if (proto->Class != ITEM_CLASS_WEAPON && proto->Class != ITEM_CLASS_ARMOR)
-            return;
+            return 0;
         if (Budget(proto, proto->ItemLevel) <= 0.0f)
-            return;                                     // poor/common or no budget: client would not scale it
+            return 0;                                   // poor/common or no budget: client would not scale it
 
         uint32 target = TargetItemLevel(proto, targetLevel);
         if (uint32 const cap = ItemLevelCap(targetLevel))
             target = std::min(target, cap);
         int32 const shift = std::min<int32>(int32(target) - int32(proto->ItemLevel), MAX_SHIFT);
+        return std::max(shift, 0);
+    }
+
+    void Stamp(Player* player, Item* item, uint32 targetLevel, char const* source)
+    {
+        ItemTemplate const* proto = item ? item->GetTemplate() : nullptr;
+        if (!proto || item->GetUpgradeId())
+            return;
+        int32 const shift = RaiseFor(proto, targetLevel);
         if (shift <= 0)
-            return;                                     // upgrades only
+            return;
 
         bool const equipped = item->IsEquipped() && !item->IsBroken();
         if (equipped)
@@ -450,6 +460,16 @@ namespace
     {
         return g_itemScaling && player && DestinyWeaver::LevelScalingEnabled(player);
     }
+
+    // The item as this player would get it if they looted it now (same rules as
+    // OnLootItem), for bots' loot rolls: they roll on the raised version.
+    ItemTemplate const* LootPreview(Player* player, ItemTemplate const* proto)
+    {
+        if (!ItemScalingFor(player) || !ScaledContent(player))
+            return nullptr;
+        int32 const shift = RaiseFor(proto, player->getLevel());
+        return shift > 0 ? ShiftedTemplate(proto, shift) : nullptr;
+    }
 }
 
 namespace DestinyWeaver
@@ -469,6 +489,7 @@ namespace DestinyWeaver
         ItemScalingHooks::ItemLoaded.store(keep ? &ItemLoaded : nullptr);
         ItemScalingHooks::UpgradeHotfixList.store(keep ? &UpgradeHotfixList : nullptr);
         ItemScalingHooks::UpgradeRowWriter.store(keep ? &UpgradeRowWriter : nullptr);
+        ItemScalingHooks::LootPreview.store(g_itemScaling ? &LootPreview : nullptr);
     }
 
     void LoadItemShifts()
