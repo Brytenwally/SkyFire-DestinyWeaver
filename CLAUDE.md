@@ -57,7 +57,9 @@ Project-wide notes are in SkyFire-playerbots' `CLAUDE.md`.
   default 60:59, 70:90, 80:180, 85:315, 90:440) clip the target so low-level farming cannot
   make raid-grade gear. Shifts persist in `character_destiny_weaver_items` (cleaned of deleted items at
   startup), restored by the ItemLoaded hook. Items loaded before OnStartup (auction house,
-  guild bank) get their raise back on their next load. Bots are skipped.
+  guild bank) get their raise back on their next load. Bots too (owner's choice): they follow
+  the same switch as for creatures (group leader's, else `Scaling.UngroupedBots`);
+  SkyFire-playerbots values raised items through `Item::GetStatTemplate`.
 - Playerbots: bot sessions (`WorldSession::IsBot`) have no stored choice; grouped bots follow
   the leader, ungrouped ones use `DestinyWeaver.Scaling.UngroupedBots` (default off).
 

@@ -444,10 +444,11 @@ namespace
             targetLevel);
     }
 
+    // Bots too (owner's choice): they follow the same switch as for creatures, i.e. their
+    // group leader's, or DestinyWeaver.Scaling.UngroupedBots when they play alone.
     bool ItemScalingFor(Player* player)
     {
-        return g_itemScaling && player && player->GetSession() && !player->GetSession()->IsBot()
-            && DestinyWeaver::LevelScalingEnabled(player);
+        return g_itemScaling && player && DestinyWeaver::LevelScalingEnabled(player);
     }
 }
 

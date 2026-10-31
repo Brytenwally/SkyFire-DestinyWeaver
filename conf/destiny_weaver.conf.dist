@@ -77,6 +77,8 @@ DestinyWeaver.Scaling.QuestXpKeepShare = 100
 #                     only, never downgrades; weapons and armor of uncommon quality and
 #                     up; not in raids, heroics, scenarios, battlegrounds or arenas.
 #                     Raised items keep their level as long as the module is enabled.
+#                     Bots too: grouped bots follow their leader's scaling switch,
+#                     ungrouped ones DestinyWeaver.Scaling.UngroupedBots.
 #        Default:     1
 DestinyWeaver.ItemScaling = 1
 
