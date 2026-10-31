@@ -1,0 +1,76 @@
+###################################################################################################
+#  mod-destiny-weaver (SkyFire 5.4.8)
+#
+#  Per-character open world scaling and experience bonus control, ported from the
+#  AzerothCore CoA module. Copy this file to destiny_weaver.conf next to worldserver.conf.
+#
+#  Creatures are scaled for the character who asked for it, and only for them: the level,
+#  health, mana, armor and damage of a creature are each character's own version, so two
+#  characters can fight the same creature at two different levels while everybody else
+#  sees it as authored. Quest levels and rewards follow each character's choice too.
+#
+#  Players switch it with `.weaver scaling on|off` and `.weaver xpbonus on|off`;
+#  `.weaver` shows their current state.
+###################################################################################################
+
+#    DestinyWeaver.Enable
+#        Description: Enable the module. Off by default: nothing changes until this is 1.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+DestinyWeaver.Enable = 0
+
+#    DestinyWeaver.LevelScaling
+#        Description: Whether open world scaling (creatures and quests) exists at all.
+#        Default:     1
+DestinyWeaver.LevelScaling = 1
+
+#    DestinyWeaver.LevelScaling.Default
+#        Description: What a character that never used `.weaver scaling` gets.
+#                     1 = scaled to their level, 0 = authored levels until they turn it on.
+#        Default:     1
+DestinyWeaver.LevelScaling.Default = 1
+
+#    DestinyWeaver.Scaling.Offset
+#        Description: How far below the character a scaled creature sits: a level 40
+#                     character meets creatures of at least level 37. Creatures above that
+#                     keep their level (in the open world they are never brought down).
+#        Default:     3
+DestinyWeaver.Scaling.Offset = 3
+
+#    DestinyWeaver.Scaling.Dungeons
+#        Description: Scale normal 5-player dungeons too. There a creature is held within
+#                     the offset on both sides of the character (it can also come down, for
+#                     a group that entered a dungeon below its level). Heroic dungeons,
+#                     raids, scenarios, battlegrounds and arenas are never scaled.
+#        Default:     1
+DestinyWeaver.Scaling.Dungeons = 1
+
+#    DestinyWeaver.Scaling.UngroupedBots
+#        Description: Playerbots that are not in a group: 1 = they scale the world to
+#                     their level, 0 = they meet authored levels. Grouped bots always follow
+#                     their group leader's switch, like any other member.
+#        Default:     0
+DestinyWeaver.Scaling.UngroupedBots = 0
+
+#    DestinyWeaver.Scaling.QuestMoneyKeepShare
+#        Description: Share (%) of the level-appropriate money a scaled quest keeps when it
+#                     is lifted all the way from the bottom of the level range; a quest at
+#                     the character's own level keeps all of it. Never below the authored
+#                     reward. 100 = no discount.
+#        Range:       0-100
+#        Default:     60
+DestinyWeaver.Scaling.QuestMoneyKeepShare = 60
+
+#    DestinyWeaver.Scaling.QuestXpKeepShare
+#        Description: The same discount for quest experience.
+#        Range:       0-100
+#        Default:     100
+DestinyWeaver.Scaling.QuestXpKeepShare = 100
+
+#    DestinyWeaver.ExperienceBonusControl
+#        Description: Allow `.weaver xpbonus off`: the character stops receiving bonus
+#                     experience from auras (heirlooms, the guild perk, potions and other
+#                     SPELL_AURA_MOD_XP_PCT / MOD_XP_QUEST_PCT effects). Rested experience,
+#                     recruit-a-friend and the realm's XP rates are not affected.
+#        Default:     1
+DestinyWeaver.ExperienceBonusControl = 1
