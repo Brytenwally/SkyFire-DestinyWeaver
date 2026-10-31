@@ -3,8 +3,8 @@
 * See LICENSE.md file for Copyright information
 *
 * Item scaling: gear a character with open world scaling loots (or gets from a scaled
-* quest) below their level is raised to the item level an item of its kind has at that
-* level, and stays there: heirloom-like, but frozen at the level it was looted at.
+* quest) below their level is raised to the item level an item of its kind has at their
+* level (capped per level bracket), and stays there: heirloom-like, but frozen at the level it was looted at.
 *
 * The raise is the 5.4 item upgrade modifier on that one item (Item::SetUpgradeId). The
 * upgrade ids are this module's own ItemUpgrade.db2 rows, sent to clients as hotfixes
@@ -72,8 +72,8 @@ namespace
     bool g_questRewards = true;          // DestinyWeaver.ItemScaling.QuestRewards
 
     // DestinyWeaver.ItemScaling.ItemLevelCaps: highest item level a raise may reach, by the
-    // level it targets ("level:item level" pairs; a target level uses the first pair whose
-    // level is at or above it). Keeps farming low creatures from producing raid-grade gear.
+    // player's level ("level:item level" pairs; a level uses the first pair whose level is
+    // at or above it). Keeps farming low creatures from producing raid-grade gear.
     std::vector<std::pair<uint32, uint32>> g_itemLevelCaps;
 
     std::vector<std::pair<uint32, uint32>> ParseItemLevelCaps(std::string const& text)
@@ -505,14 +505,13 @@ class destiny_weaver_items_playerscript : public PlayerScript
 public:
     destiny_weaver_items_playerscript() : PlayerScript("destiny_weaver_items_playerscript") { }
 
-    // Loot where the world scales comes up to what the character's creatures are at.
+    // Loot where the world scales comes up to the character's own level (owner's rule:
+    // the target and the item level cap both follow the player's level).
     void OnLootItem(Player* player, Item* item, uint32 /*count*/) override
     {
         if (!ItemScalingFor(player) || !ScaledContent(player))
             return;
-        uint8 const offset = DestinyWeaver::GetConfig().offset;
-        uint32 const level = player->getLevel() > offset ? player->getLevel() - offset : 1;
-        Stamp(player, item, level, "loot");
+        Stamp(player, item, player->getLevel(), "loot");
     }
 
     // A scaled quest pays at the character's level; so do its item rewards.

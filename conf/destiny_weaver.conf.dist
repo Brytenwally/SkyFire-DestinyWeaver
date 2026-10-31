@@ -69,9 +69,9 @@ DestinyWeaver.Scaling.QuestXpKeepShare = 100
 
 #    DestinyWeaver.ItemScaling
 #        Description: Raise the gear a character with open world scaling loots below
-#                     their level to the item level an item of its kind has at that
-#                     level (the level their creatures are at: their level minus the
-#                     offset). The item keeps its name and its own stats, scaled the way
+#                     their level to the item level an item of its kind has at their
+#                     level (the median item level of such items requiring that level,
+#                     capped by ItemLevelCaps). The item keeps its name and its own stats, scaled the way
 #                     the client scales upgraded items (the tooltip shows the new item
 #                     level and stats), and stays at that level afterwards. Upgrades
 #                     only, never downgrades; weapons and armor of uncommon quality and
@@ -81,9 +81,9 @@ DestinyWeaver.Scaling.QuestXpKeepShare = 100
 DestinyWeaver.ItemScaling = 1
 
 #    DestinyWeaver.ItemScaling.ItemLevelCaps
-#        Description: Highest item level a raise may reach, by the level it targets, so
+#        Description: Highest item level a raise may reach, by the player's level, so
 #                     farming low-level creatures cannot produce raid-grade gear. Pairs of
-#                     "level:item level"; a target level uses the first pair whose level is
+#                     "level:item level"; a player level uses the first pair whose level is
 #                     at or above it (levels 1-60 -> 59, 61-70 -> 90, 71-80 -> 180,
 #                     81-85 -> 315, 86-90 -> 440). Levels above the last pair are not capped.
 #                     Items already above the cap are left as they are.

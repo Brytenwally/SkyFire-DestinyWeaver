@@ -50,9 +50,10 @@ Project-wide notes are in SkyFire-playerbots' `CLAUDE.md`.
   multiplier x gtItemSocketCostPerLevel)), multiplier recovered to a quarter since the DB
   rounds it; checked on 14 tooltip values. Target item level: median item level of items of
   the same class/subclass/slot/quality requiring that level (widening to subclass, class,
-  +-10 levels), the owner's Level-60-World reference index. Loot target = level - offset,
-  only where creatures scale (`ScaledContent`); quest rewards = player level when the quest
-  is scaled. Owner's item level caps per target level (`DestinyWeaver.ItemScaling.ItemLevelCaps`,
+  +-10 levels), the owner's Level-60-World reference index. Owner's rule: loot and quest
+  rewards both target the player's own level (loot only where creatures scale,
+  `ScaledContent`; quest rewards when the quest is scaled). Owner's item level caps per
+  player level (`DestinyWeaver.ItemScaling.ItemLevelCaps`,
   default 60:59, 70:90, 80:180, 85:315, 90:440) clip the target so low-level farming cannot
   make raid-grade gear. Shifts persist in `character_destiny_weaver_items` (cleaned of deleted items at
   startup), restored by the ItemLoaded hook. Items loaded before OnStartup (auction house,
