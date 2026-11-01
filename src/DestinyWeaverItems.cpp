@@ -261,8 +261,11 @@ namespace
     //
     // A random property is a fixed set of enchantments (+1 strength +1 agility), not a
     // suffix scaled by the item's budget, so the upgrade modifier leaves it as it is. The
-    // raise moves the item to the tier of the same property (same name, same stats) whose
-    // size is closest to the old one scaled by the budget ratio, as the item's own stats.
+    // raise swaps it for its scaling twin, the random suffix of the same name and stats
+    // (ItemRandomSuffix "of the Tiger"), sized like any suffix by the budget at the raised
+    // level (owner's choice). A property without a twin (procs, resistances) moves to the
+    // tier of the same property whose size is closest to the old one scaled by the budget
+    // ratio, as the item's own stats.
 
     struct PropertyShape
     {
@@ -270,10 +273,11 @@ namespace
         uint32 points = 0;                              // sum of the amounts
     };
 
-    bool ShapeOf(ItemRandomPropertiesEntry const* property, PropertyShape& shape)
+    template <size_t N>
+    bool ShapeOfEnchants(uint32 const (&enchants)[N], PropertyShape& shape)
     {
         shape = PropertyShape();
-        for (uint32 enchantId : property->enchant_id)
+        for (uint32 enchantId : enchants)
         {
             if (!enchantId)
                 continue;
@@ -289,7 +293,48 @@ namespace
             }
         }
         std::sort(shape.effects.begin(), shape.effects.end());
-        return !shape.effects.empty() && shape.points > 0;
+        return !shape.effects.empty();
+    }
+
+    bool ShapeOf(ItemRandomPropertiesEntry const* property, PropertyShape& shape)
+    {
+        return ShapeOfEnchants(property->enchant_id, shape) && shape.points > 0;
+    }
+
+    // The random suffix of the same name with the same enchant types and stats; 0 if none.
+    uint32 SuffixTwin(uint32 propertyId)
+    {
+        ItemRandomPropertiesEntry const* property = sItemRandomPropertiesStore.LookupEntry(propertyId);
+        PropertyShape shape;
+        if (!property || !property->nameSuffix || !*property->nameSuffix || !ShapeOf(property, shape))
+            return 0;
+
+        static std::unordered_map<std::string, std::vector<uint32>> const byName = []
+        {
+            std::unordered_map<std::string, std::vector<uint32>> map;
+            for (uint32 id = 0; id < sItemRandomSuffixStore.GetNumRows(); ++id)
+                if (ItemRandomSuffixEntry const* suffix = sItemRandomSuffixStore.LookupEntry(id))
+                    if (suffix->nameSuffix && *suffix->nameSuffix)
+                        map[suffix->nameSuffix].push_back(id);
+            return map;
+        }();
+
+        auto const it = byName.find(property->nameSuffix);
+        if (it == byName.end())
+            return 0;
+        for (uint32 suffixId : it->second)
+        {
+            ItemRandomSuffixEntry const* suffix = sItemRandomSuffixStore.LookupEntry(suffixId);
+            // Only the enchantments the suffix gives a share of the budget to.
+            uint32 enchants[5] = {};
+            for (uint8 k = 0; k < 5; ++k)
+                if (suffix->prefix[k])
+                    enchants[k] = suffix->enchant_id[k];
+            PropertyShape twin;
+            if (ShapeOfEnchants(enchants, twin) && twin.effects == shape.effects)
+                return suffixId;
+        }
+        return 0;
     }
 
     // Property ids by name, built once.
@@ -540,13 +585,21 @@ namespace
             return;
 
         int32 const oldProperty = item->GetItemRandomPropertyId();
-        uint32 const newProperty = oldProperty > 0 ? RaisedProperty(proto, uint32(oldProperty), shift) : 0;
+        uint32 const twin = oldProperty > 0 ? SuffixTwin(uint32(oldProperty)) : 0;
+        uint32 const newProperty = oldProperty > 0 && !twin ? RaisedProperty(proto, uint32(oldProperty), shift) : 0;
 
         // _ApplyItemMods also takes the item's enchantments (the property's) off and on.
         bool const equipped = item->IsEquipped() && !item->IsBroken();
         if (equipped)
             player->_ApplyItemMods(item, item->GetSlot(), false);
         item->SetUpgradeId(UpgradeIdFor(shift));
+        if (twin)
+        {
+            // Same name and stats, now sized by the suffix factor set just below.
+            item->SetItemRandomProperties(-int32(twin));
+            SF_LOG_INFO("modules", "[mod-destiny-weaver] %s's %s: random property %d swapped for random suffix %u.",
+                player->GetName().c_str(), proto->Name1.c_str(), oldProperty, twin);
+        }
         ApplyRaisedSuffix(item, shift);
         if (newProperty && int32(newProperty) != oldProperty)
         {

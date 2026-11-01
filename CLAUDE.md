@@ -56,10 +56,14 @@ Project-wide notes are in SkyFire-playerbots' `CLAUDE.md`.
   player level (`DestinyWeaver.ItemScaling.ItemLevelCaps`,
   default 60:59, 70:90, 80:180, 85:315, 90:440) clip the target so low-level farming cannot
   make raid-grade gear. Random properties and suffixes (owner's report: a level 12 shortsword
-  "of the Tiger" kept +1 strength at 46): a static property is a fixed enchant set, so the raise
-  switches it to the tier of the same property (same name, same enchant types/stats) closest
-  to its points x the budget ratio, never smaller (`RaisedProperty`, saved with the item; it
-  stays if the module is turned off later). A suffix's size is the item's suffix factor, which
+  "of the Tiger" kept +1 strength at 46): a static property is a fixed enchant set. Owner's
+  choice: the raise swaps it for its scaling twin, the ItemRandomSuffix of the same name and
+  enchant types/stats (`SuffixTwin`), sized at the full budget of the raised level like any
+  suffix (slightly stronger than the old property scaled, as classic properties were under
+  budget). Without a twin (procs, resistances) it moves to the tier of the same property
+  closest to its points x the budget ratio, never smaller (`RaisedProperty`). Both are saved
+  with the item. A swapped item's template has no RandomSuffix, so the core's suffix factor
+  for it is 0: its bonus exists only while the module sets the factor (module off = no bonus). A suffix's size is the item's suffix factor, which
   the core recomputes from the base template on every load, so `ApplyRaisedSuffix` sets the
   budget at the raised level, at the raise and in ItemLoaded. Inspecting another player needs
   the core's inspect packet to carry the modifiers, property and suffix factor (fixed in

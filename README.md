@@ -26,8 +26,9 @@ AzerothCore CoA `mod-destiny-weaver`.
   level, and stays there, like an heirloom frozen at the level it was looted at. It keeps its
   name and its own stats, scaled; the tooltip shows the new item level and stats (the 5.4
   item upgrade, with this module's upgrade rows sent to clients as hotfixes). Upgrades only.
-  A random property ("of the Tiger") moves to the stronger tier of the same property, and a
-  random suffix ("of the Monkey") grows with the raised item level.
+  A fixed random property ("of the Tiger") becomes the random suffix of the same name and
+  stats, which grows with the item level like any suffix; random suffixes grow with the
+  raised item level. Only items raised from then on.
 - **Experience bonus control.** `.weaver xpbonus off` removes aura experience bonuses
   (heirlooms, guild perk, potions) for a character who wants the base rate.
 
