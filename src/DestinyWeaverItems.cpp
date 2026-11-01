@@ -257,6 +257,107 @@ namespace
         return result;
     }
 
+    // ---- Static random properties ("of the Tiger") -----------------------------------
+    //
+    // A random property is a fixed set of enchantments (+1 strength +1 agility), not a
+    // suffix scaled by the item's budget, so the upgrade modifier leaves it as it is. The
+    // raise moves the item to the tier of the same property (same name, same stats) whose
+    // size is closest to the old one scaled by the budget ratio, as the item's own stats.
+
+    struct PropertyShape
+    {
+        std::vector<std::pair<uint32, uint32>> effects; // (enchant type, stat), sorted
+        uint32 points = 0;                              // sum of the amounts
+    };
+
+    bool ShapeOf(ItemRandomPropertiesEntry const* property, PropertyShape& shape)
+    {
+        shape = PropertyShape();
+        for (uint32 enchantId : property->enchant_id)
+        {
+            if (!enchantId)
+                continue;
+            SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(enchantId);
+            if (!enchant)
+                return false;
+            for (uint8 i = 0; i < MAX_ITEM_ENCHANTMENT_EFFECTS; ++i)
+            {
+                if (!enchant->type[i])
+                    continue;
+                shape.effects.emplace_back(enchant->type[i], enchant->spellid[i]);
+                shape.points += enchant->amount[i];
+            }
+        }
+        std::sort(shape.effects.begin(), shape.effects.end());
+        return !shape.effects.empty() && shape.points > 0;
+    }
+
+    // Property ids by name, built once.
+    std::unordered_map<std::string, std::vector<uint32>> const& PropertiesByName()
+    {
+        static std::unordered_map<std::string, std::vector<uint32>> const byName = []
+        {
+            std::unordered_map<std::string, std::vector<uint32>> map;
+            for (uint32 id = 0; id < sItemRandomPropertiesStore.GetNumRows(); ++id)
+                if (ItemRandomPropertiesEntry const* property = sItemRandomPropertiesStore.LookupEntry(id))
+                    if (property->nameSuffix && *property->nameSuffix)
+                        map[property->nameSuffix].push_back(id);
+            return map;
+        }();
+        return byName;
+    }
+
+    // The same property sized for the item raised by shift; the old id when nothing fits better.
+    uint32 RaisedProperty(ItemTemplate const* proto, uint32 propertyId, int32 shift)
+    {
+        ItemRandomPropertiesEntry const* property = sItemRandomPropertiesStore.LookupEntry(propertyId);
+        PropertyShape shape;
+        if (!property || !property->nameSuffix || !*property->nameSuffix || !ShapeOf(property, shape))
+            return propertyId;
+
+        float const oldBudget = Budget(proto, proto->ItemLevel);
+        float const newBudget = Budget(proto, proto->ItemLevel + uint32(shift));
+        if (oldBudget <= 0.0f || newBudget <= oldBudget)
+            return propertyId;
+        double const target = double(shape.points) * double(newBudget) / double(oldBudget);
+
+        auto const it = PropertiesByName().find(property->nameSuffix);
+        if (it == PropertiesByName().end())
+            return propertyId;
+
+        uint32 best = propertyId;
+        double bestError = std::abs(double(shape.points) - target);
+        for (uint32 candidateId : it->second)
+        {
+            PropertyShape candidate;
+            ItemRandomPropertiesEntry const* entry = sItemRandomPropertiesStore.LookupEntry(candidateId);
+            // Upgrades only: never a smaller tier.
+            if (!entry || !ShapeOf(entry, candidate) || candidate.effects != shape.effects
+                || candidate.points <= shape.points)
+                continue;
+            double const error = std::abs(double(candidate.points) - target);
+            if (error < bestError)
+            {
+                best = candidateId;
+                bestError = error;
+            }
+        }
+        return best;
+    }
+
+    // A random suffix ("of the Monkey") is sized by the item's suffix factor, the budget at
+    // its item level (GenerateEnchSuffixFactor), which the core recomputes from the base
+    // template on every load: raised items get the budget at their raised level.
+    void ApplyRaisedSuffix(Item* item, int32 shift)
+    {
+        ItemTemplate const* proto = item->GetTemplate();
+        if (!proto || item->GetItemRandomPropertyId() >= 0 || shift <= 0)
+            return;
+        uint32 const factor = uint32(Budget(proto, proto->ItemLevel + uint32(shift)));
+        if (factor > item->GetItemSuffixFactor())
+            item->SetUInt32Value(ITEM_FIELD_PROPERTY_SEED, factor);
+    }
+
     // ---- Target item level per character level ---------------------------------------
 
     bool IsJunkName(std::string name)
@@ -371,8 +472,11 @@ namespace
     void ItemLoaded(Item* item)
     {
         if (int32 const shift = StoredShift(item->GetGUIDLow()))
+        {
             if (!item->GetUpgradeId())
                 item->SetUpgradeId(UpgradeIdFor(shift));
+            ApplyRaisedSuffix(item, shift);
+        }
     }
 
     void UpgradeHotfixList(std::vector<std::pair<uint32, uint32>>& rows)
@@ -435,10 +539,21 @@ namespace
         if (shift <= 0)
             return;
 
+        int32 const oldProperty = item->GetItemRandomPropertyId();
+        uint32 const newProperty = oldProperty > 0 ? RaisedProperty(proto, uint32(oldProperty), shift) : 0;
+
+        // _ApplyItemMods also takes the item's enchantments (the property's) off and on.
         bool const equipped = item->IsEquipped() && !item->IsBroken();
         if (equipped)
             player->_ApplyItemMods(item, item->GetSlot(), false);
         item->SetUpgradeId(UpgradeIdFor(shift));
+        ApplyRaisedSuffix(item, shift);
+        if (newProperty && int32(newProperty) != oldProperty)
+        {
+            item->SetItemRandomProperties(int32(newProperty));
+            SF_LOG_INFO("modules", "[mod-destiny-weaver] %s's %s: random property %d raised to %u.",
+                player->GetName().c_str(), proto->Name1.c_str(), oldProperty, newProperty);
+        }
         if (equipped)
             player->_ApplyItemMods(item, item->GetSlot(), true);
 

@@ -55,7 +55,15 @@ Project-wide notes are in SkyFire-playerbots' `CLAUDE.md`.
   `ScaledContent`; quest rewards when the quest is scaled). Owner's item level caps per
   player level (`DestinyWeaver.ItemScaling.ItemLevelCaps`,
   default 60:59, 70:90, 80:180, 85:315, 90:440) clip the target so low-level farming cannot
-  make raid-grade gear. Shifts persist in `character_destiny_weaver_items` (cleaned of deleted items at
+  make raid-grade gear. Random properties and suffixes (owner's report: a level 12 shortsword
+  "of the Tiger" kept +1 strength at 46): a static property is a fixed enchant set, so the raise
+  switches it to the tier of the same property (same name, same enchant types/stats) closest
+  to its points x the budget ratio, never smaller (`RaisedProperty`, saved with the item; it
+  stays if the module is turned off later). A suffix's size is the item's suffix factor, which
+  the core recomputes from the base template on every load, so `ApplyRaisedSuffix` sets the
+  budget at the raised level, at the raise and in ItemLoaded. Inspecting another player needs
+  the core's inspect packet to carry the modifiers, property and suffix factor (fixed in
+  core). Shifts persist in `character_destiny_weaver_items` (cleaned of deleted items at
   startup), restored by the ItemLoaded hook. Items loaded before OnStartup (auction house,
   guild bank) get their raise back on their next load. Bots too (owner's choice): they follow
   the same switch as for creatures (group leader's, else `Scaling.UngroupedBots`);
