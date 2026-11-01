@@ -42,6 +42,9 @@ DestinyWeaver.Scaling.Offset = 3
 #                     the offset on both sides of the character (it can also come down, for
 #                     a group that entered a dungeon below its level). Heroic dungeons,
 #                     raids, scenarios, battlegrounds and arenas are never scaled.
+#                     A character with scaling on also keeps normal dungeons (and the
+#                     normal randoms, e.g. Random Classic Dungeon) in the dungeon finder
+#                     past their maximum level.
 #        Default:     1
 DestinyWeaver.Scaling.Dungeons = 1
 

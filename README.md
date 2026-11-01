@@ -15,6 +15,8 @@ AzerothCore CoA `mod-destiny-weaver`.
   - Never scaled: pets, totems, summons, triggers, critters, world bosses, friendly creatures,
     heroic dungeons, raids, scenarios, battlegrounds and arenas.
   - Normal dungeons are scaled within ±3 of the character (they can also come down).
+  - They stay in the dungeon finder past their maximum level, alone or in their random
+    (Random Classic Dungeon...), for characters with scaling on.
   - In a group the leader's switch decides whether the group scales; each member still gets
     their own level.
 - **Quest scaling.** Quests play at the character's level: experience and money are paid at that

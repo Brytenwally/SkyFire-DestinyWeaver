@@ -77,6 +77,11 @@ Project-wide notes are in SkyFire-playerbots' `CLAUDE.md`.
 - Playerbots: bot sessions (`WorldSession::IsBot`) have no stored choice; grouped bots follow
   the leader, ungrouped ones use `DestinyWeaver.Scaling.UngroupedBots` (default off).
 
+- Dungeon finder (owner's request: a level 82 can queue for classic dungeons): core hook
+  `LocalLevelScaling::QueueAboveMaxLevelOwner`, asked before LFGMgr's too-high-level lock and
+  in `GetRandomAndSeasonalDungeons`; `ResolveQueueAboveMaxLevel` allows difficulty 1 (or 0)
+  entries whose map is not a raid/scenario/battleground (random entries have no instance
+  map) for characters with scaling on. The client refreshes its list when the finder opens.
 - Dungeons: `DestinyWeaver::ScaledDungeon` (difficulty `DIFFICULTY_NORMAL` 1, or 0). Do not
   use the core's `Map::IsRegularDifficulty()`: it tests difficulty 0, which no 5.4.8 dungeon
   has, so normal dungeons never scaled (owner's report: quests scaled, mobs and drops not).

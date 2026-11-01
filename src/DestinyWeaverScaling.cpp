@@ -25,6 +25,7 @@
 
 #include "Config.h"
 #include "Creature.h"
+#include "DBCStores.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
@@ -185,6 +186,21 @@ namespace
         return g_active.load(std::memory_order_relaxed) && DestinyWeaver::LevelScalingEnabled(player);
     }
 
+    // Dungeon finder: a normal dungeon scales to the character, so it stays in their list (and
+    // in the random it belongs to) past its maximum level. Heroic, challenge mode, raid
+    // finder, scenarios and raids keep their level range. Random entries name no instance
+    // map (or a continent), so only a map that is a raid or scenario is refused.
+    bool ResolveQueueAboveMaxLevel(Player const* player, uint32 mapId, uint8 difficulty)
+    {
+        if (!g_active.load(std::memory_order_relaxed) || !DestinyWeaver::GetConfig().dungeons
+            || !DestinyWeaver::LevelScalingEnabled(player))
+            return false;
+        if (difficulty != DIFFICULTY_NORMAL && difficulty != DIFFICULTY_NONE)
+            return false;
+        MapEntry const* entry = sMapStore.LookupEntry(mapId);
+        return !entry || (!entry->IsRaid() && !entry->IsScenario() && !entry->IsBattlegroundOrArena());
+    }
+
     Player const* OwningPlayer(Unit const* unit)
     {
         return unit ? unit->GetCharmerOrOwnerPlayerOrPlayerItself() : nullptr;
@@ -213,6 +229,7 @@ namespace DestinyWeaver
         LocalLevelScaling::ViewArmorOwner.store(active ? &ResolveArmor : nullptr);
         LocalLevelScaling::ViewFieldOwner.store(active ? &ResolveField : nullptr);
         LocalLevelScaling::QuestScalingOwner.store(active ? &ResolveQuestScaling : nullptr);
+        LocalLevelScaling::QueueAboveMaxLevelOwner.store(active ? &ResolveQueueAboveMaxLevel : nullptr);
 
         auto share = [](char const* key, int fallback)
         {
