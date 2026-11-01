@@ -554,7 +554,7 @@ namespace
         Map const* map = player->GetMap();
         if (!map || map->IsBattlegroundOrArena() || map->IsRaid() || map->IsScenario())
             return false;
-        return !map->IsDungeon() || (DestinyWeaver::GetConfig().dungeons && map->IsRegularDifficulty());
+        return !map->IsDungeon() || DestinyWeaver::ScaledDungeon(map);
     }
 
     // Item levels an item of this kind gains when raised for a character of targetLevel

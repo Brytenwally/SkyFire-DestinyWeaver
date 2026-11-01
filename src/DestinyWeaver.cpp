@@ -14,6 +14,7 @@
 #include "DatabaseEnv.h"
 #include "Group.h"
 #include "GroupReference.h"
+#include "Map.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
@@ -121,6 +122,14 @@ namespace
 
 namespace DestinyWeaver
 {
+    // Map::IsRegularDifficulty() is difficulty 0, which no 5.4.8 dungeon has: a normal
+    // dungeon is DIFFICULTY_NORMAL (1), heroic 2, challenge mode 8.
+    bool ScaledDungeon(Map const* map)
+    {
+        return map && map->IsDungeon() && !map->IsRaid() && GetConfig().dungeons
+            && (map->GetDifficulty() == DIFFICULTY_NORMAL || map->GetDifficulty() == DIFFICULTY_NONE);
+    }
+
     Config const& GetConfig()
     {
         return g_config;

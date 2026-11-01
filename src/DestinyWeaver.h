@@ -12,6 +12,7 @@
 #include "Define.h"
 
 class Group;
+class Map;
 class Player;
 
 namespace DestinyWeaver
@@ -28,6 +29,8 @@ namespace DestinyWeaver
     };
 
     Config const& GetConfig();
+    // A normal 5-player dungeon that scales (DestinyWeaver.Scaling.Dungeons).
+    bool ScaledDungeon(Map const* map);
     void LoadConfig(bool reload);
 
     // Open world scaling for this character: their own choice, or while grouped the leader's

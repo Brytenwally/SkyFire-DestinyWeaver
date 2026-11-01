@@ -90,7 +90,7 @@ namespace
         Map const* map = creature->GetMap();
         if (!map || map->IsBattlegroundOrArena() || map->IsRaid() || map->IsScenario())
             return false;
-        if (map->IsDungeon() && (!DestinyWeaver::GetConfig().dungeons || !map->IsRegularDifficulty()))
+        if (map->IsDungeon() && !DestinyWeaver::ScaledDungeon(map))
             return false;
 
         // Somebody's pet, guardian, totem or a creature's summon keeps its level; so does scenery.

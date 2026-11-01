@@ -77,6 +77,10 @@ Project-wide notes are in SkyFire-playerbots' `CLAUDE.md`.
 - Playerbots: bot sessions (`WorldSession::IsBot`) have no stored choice; grouped bots follow
   the leader, ungrouped ones use `DestinyWeaver.Scaling.UngroupedBots` (default off).
 
+- Dungeons: `DestinyWeaver::ScaledDungeon` (difficulty `DIFFICULTY_NORMAL` 1, or 0). Do not
+  use the core's `Map::IsRegularDifficulty()`: it tests difficulty 0, which no 5.4.8 dungeon
+  has, so normal dungeons never scaled (owner's report: quests scaled, mobs and drops not).
+
 ## Checking
 
 Syntax-only compile against the core headers, as in SkyFire-playerbots' CLAUDE.md:
